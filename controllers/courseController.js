@@ -35,14 +35,14 @@ exports.deleteCourse = async (req, res) => {
     await Course.findByIdAndDelete(id);
     res.status(200).json({ message: 'Course deleted successfully' });
   } catch (error) {
-    console.error('Delete course error:', error.message);
+    console.error('Delete course error:', error); // Improved logging
     res.status(500).json({ message: 'Server error while deleting course' });
   }
 };
 
 exports.addCourse = async (req, res) => {
   const { title, description, instructor, instructorPhone, date, price } = req.body;
-  const image = req.file?.filename;
+  const image = req.file ? req.file.filename : undefined; // Check req.file explicitly
 
   try {
     const course = new Course({
@@ -50,7 +50,7 @@ exports.addCourse = async (req, res) => {
       description,
       instructor,
       instructorPhone,
-      date, // Add date
+      date,
       price,
       image,
       createdBy: req.user.id,
@@ -58,23 +58,31 @@ exports.addCourse = async (req, res) => {
     await course.save();
     res.status(200).json({ message: 'Course added successfully', course });
   } catch (error) {
-    if (image) fs.unlinkSync(path.join(__dirname, '../uploads', image));
-    res.status(500).json({ message: error.message });
+    if (image) {
+      const imagePath = path.join(__dirname, '../Uploads', image);
+      if (fs.existsSync(imagePath)) { // Check before deletion
+        fs.unlinkSync(imagePath);
+      }
+    }
+    console.error('Add course error:', error); // Improved logging
+    res.status(500).json({ message: 'Server error while adding course' });
   }
 };
+
 exports.getAdminCourses = async (req, res) => {
   try {
     const courses = await Course.find({ createdBy: req.user.id });
     res.status(200).json(courses);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Get admin courses error:', error); // Improved logging
+    res.status(500).json({ message: 'Server error while fetching courses' });
   }
 };
 
 exports.updateCourse = async (req, res) => {
   const { id } = req.params;
   const { title, description, instructor, instructorPhone, date, price } = req.body;
-  const image = req.file?.filename;
+  const image = req.file ? req.file.filename : undefined; // Check req.file explicitly
 
   try {
     const course = await Course.findById(id);
@@ -85,18 +93,29 @@ exports.updateCourse = async (req, res) => {
     course.description = description || course.description;
     course.instructor = instructor || course.instructor;
     course.instructorPhone = instructorPhone || course.instructorPhone;
-    course.date = date || course.date; // Add date
+    course.date = date || course.date;
     course.price = price || course.price;
     if (image) {
-      if (course.image) fs.unlinkSync(path.join(__dirname, '../uploads', course.image));
+      if (course.image) {
+        const oldImagePath = path.join(__dirname, '../Uploads', course.image);
+        if (fs.existsSync(oldImagePath)) { // Check before deletion
+          fs.unlinkSync(oldImagePath);
+        }
+      }
       course.image = image;
     }
 
     await course.save();
     res.status(200).json({ message: 'Course updated successfully', course });
   } catch (error) {
-    if (image) fs.unlinkSync(path.join(__dirname, '../uploads', image));
-    res.status(500).json({ message: error.message });
+    if (image) {
+      const imagePath = path.join(__dirname, '../Uploads', image);
+      if (fs.existsSync(imagePath)) { // Check before deletion
+        fs.unlinkSync(imagePath);
+      }
+    }
+    console.error('Update course error:', error); // Improved logging
+    res.status(500).json({ message: 'Server error while updating course' });
   }
 };
 
@@ -107,7 +126,8 @@ exports.getAllCourses = async (req, res) => {
     const courses = await Course.find(query);
     res.status(200).json(courses);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Get all courses error:', error); // Improved logging
+    res.status(500).json({ message: 'Server error while fetching courses' });
   }
 };
 
@@ -116,6 +136,7 @@ exports.getSampleCourses = async (req, res) => {
     const courses = await Course.find().limit(4);
     res.status(200).json(courses);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Get sample courses error:', error); // Improved logging
+    res.status(500).json({ message: 'Server error while fetching sample courses' });
   }
 };
