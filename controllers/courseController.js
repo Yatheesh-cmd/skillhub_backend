@@ -59,7 +59,7 @@ exports.addCourse = async (req, res) => {
     res.status(200).json({ message: 'Course added successfully', course });
   } catch (error) {
     if (image) {
-      const imagePath = path.join(__dirname, '../Uploads', image);
+      const imagePath = path.join(__dirname, '../uploads', image);
       if (fs.existsSync(imagePath)) { // Check before deletion
         fs.unlinkSync(imagePath);
       }
@@ -97,7 +97,7 @@ exports.updateCourse = async (req, res) => {
     course.price = price || course.price;
     if (image) {
       if (course.image) {
-        const oldImagePath = path.join(__dirname, '../Uploads', course.image);
+        const oldImagePath = path.join(__dirname, '../uploads', course.image);
         if (fs.existsSync(oldImagePath)) { // Check before deletion
           fs.unlinkSync(oldImagePath);
         }
@@ -109,7 +109,7 @@ exports.updateCourse = async (req, res) => {
     res.status(200).json({ message: 'Course updated successfully', course });
   } catch (error) {
     if (image) {
-      const imagePath = path.join(__dirname, '../Uploads', image);
+      const imagePath = path.join(__dirname, '../uploads', image);
       if (fs.existsSync(imagePath)) { // Check before deletion
         fs.unlinkSync(imagePath);
       }
